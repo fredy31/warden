@@ -68,12 +68,15 @@ class Warden
     public function admit($identifier, $password)
     {
         $user = $this->repository->getByIdentifier($identifier);
-        
-        if ($user instanceof UserInterface && $this->hasher->verify($password, $user->getPasswordHash())) {
-            $this->admitUser($user);
-            return true;
-        } else if (is_object($user) && !$user instanceof UserInterface) {
-            throw new \RuntimeException('Your users must implement "Laasti\Warden\Users\UserInterface".');
+        if($user){
+            foreach($user as $u){
+                if ($u instanceof UserInterface && $this->hasher->verify($password, $u->getPasswordHash())) {
+                    $this->admitUser($u);
+                    return true;
+                } else if (is_object($u) && !$u instanceof UserInterface) {
+                    throw new \RuntimeException('Your users must implement "Laasti\Warden\Users\UserInterface".');
+                }
+            }
         }
 
         return false;
@@ -111,11 +114,14 @@ class Warden
     public function couldBeAdmitted($identifier, $password)
     {
         $user = $this->repository->getByIdentifier($identifier);
-        
-        if ($user instanceof UserInterface && $this->hasher->verify($password, $user->getPasswordHash())) {
-            return true;
-        } else if (is_object($user) && !($user instanceof UserInterface)) {
-            throw new \RuntimeException('Your users must implement "Laasti\Warden\Users\UserInterface".');
+        if($user){
+            foreach($user as $u){
+                if ($u instanceof UserInterface && $this->hasher->verify($password, $u->getPasswordHash())) {
+                    return true;
+                } else if (is_object($u) && !($u instanceof UserInterface)) {
+                    throw new \RuntimeException('Your users must implement "Laasti\Warden\Users\UserInterface".');
+                }
+            }
         }
 
         return false;
@@ -296,9 +302,13 @@ class Warden
 
         if ($id) {
             $user = $this->repository->getById($this->session->get());
-            if ($user instanceof UserInterface) {
-                $this->admitUser($user);
-                return;
+            if($user){
+                foreach($user as $u){
+                    if ($u instanceof UserInterface) {
+                        $this->admitUser($u);
+                        return;
+                    }
+                }
             }
         }
 
